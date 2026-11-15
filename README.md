@@ -34,6 +34,10 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ### Phase 1 Documentation
 
+**Project Folder Structure (VS Code):**
+![Project Structure](docs/screenshots/01-project-structure.png)
+
+**GitHub Repository Landing Page:**
 ![GitHub Repository Landing Page](docs/screenshots/01-github-repo.png)
 
 ---
@@ -49,14 +53,14 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ### Phase 2 Documentation
 
-**Dedicated IAM User Created:**
+**1. Dedicated IAM User Created:**
 ![IAM User Created](docs/screenshots/02-iam-user-created.png)
 
-**Access Key Configured:**
+**2. Access Key Configured:**
 ![Access Key Created](docs/screenshots/02-access-key-created.png)
 
-**AWS CLI Authentication Verified:**
+**3. AWS CLI Authentication Verified:**
 ![AWS CLI Configured](docs/screenshots/02-aws-cli-configured.png)
 
-**AWS Budget Active ($10/mo):**
+**4. AWS Budget Active ($10/mo):**
 ![AWS Budget Created](docs/screenshots/02-aws-budget-created.png)
