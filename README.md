@@ -30,6 +30,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 - Configured WSL2 Ubuntu development environment on Windows 11.
 - Initialized Git version control with strict `.gitignore` security filters.
 - Established a standardized project directory structure (`eksctl/`, `helm/`, `k8s/`, `scripts/`, `docs/`).
+- Captured project folder structure and GitHub repository landing page documentation.
 
 ## Phase 2: AWS Foundations
 - Verified least-privilege admin IAM user configuration in `us-east-1`.
