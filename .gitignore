@@ -1,0 +1,14 @@
+# Credentials and Environment files
+.env
+*.pem
+*.key
+*.secret
+kubeconfig*
+
+# Database dumps and local data
+*.sql
+data/
+
+# OS specific files
+.DS_Store
+Thumbs.db
