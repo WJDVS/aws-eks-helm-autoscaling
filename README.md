@@ -4,6 +4,12 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 **Tools:** eksctl · kubectl · Helm · AWS (EKS, EC2, ELB, EBS, ACM) · GitHub
 
+## Architecture
+
+![Project Architecture](docs/screenshots/architecture.png)
+
+*Note: Solid borders represent the core build, while dashed borders represent planned Phase 2 upgrades.*
+
 ## Project Phases
 1. VS Code, Git & GitHub
 ​2. AWS Foundations
