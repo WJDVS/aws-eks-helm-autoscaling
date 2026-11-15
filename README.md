@@ -35,3 +35,11 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 - Verified least-privilege admin IAM user configuration in `us-east-1`.
 - Installed and configured AWS CLI v2 inside WSL2 Ubuntu.
 - Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with automated email alerts.
+
+- Created dedicated project IAM user: `aws-eks-helm-autoscaling-admin` with administrative privileges for infrastructure provisioning.
+
+- Generated programmatic access keys for `aws-eks-helm-autoscaling-admin` with a descriptive project tag for WSL2 CLI usage.
+
+- Installed AWS CLI v2 inside WSL2 Ubuntu and configured authentication using `aws-eks-helm-autoscaling-admin`.
+
+- Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with an 80% email alert threshold.
