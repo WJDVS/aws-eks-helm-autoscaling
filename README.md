@@ -54,13 +54,17 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 ### Phase 2 Documentation
 
 **1. Dedicated IAM User Created:**
+
 ![IAM User Created](docs/screenshots/02-iam-user-created.png)
 
 **2. Access Key Configured:**
-![Access Key Created](docs/screenshots/02-access-key-created.png)
+
+![Access Key Configured](docs/screenshots/02-access-key-created.png)
 
 **3. AWS CLI Authentication Verified:**
+
 ![AWS CLI Configured](docs/screenshots/02-aws-cli-configured.png)
 
 **4. AWS Budget Active ($10/mo):**
+
 ![AWS Budget Created](docs/screenshots/02-aws-budget-created.png)
