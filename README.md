@@ -35,20 +35,19 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 ### Phase 1 Documentation
 
 **Project Folder Structure (VS Code):**
+
 ![Project Structure](docs/screenshots/01-project-structure.png)
 
 **GitHub Repository Landing Page:**
+
 ![GitHub Repository Landing Page](docs/screenshots/01-github-repo.png)
 
 ---
 
 ## Phase 2: AWS Foundations
-- Verified least-privilege admin IAM user configuration in `us-east-1`.
-- Installed and configured AWS CLI v2 inside WSL2 Ubuntu.
-- Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with automated email alerts.
-- Created dedicated project IAM user: `aws-eks-helm-autoscaling-admin` with administrative privileges for infrastructure provisioning.
-- Generated programmatic access keys for `aws-eks-helm-autoscaling-admin` with a descriptive project tag for WSL2 CLI usage.
-- Installed AWS CLI v2 inside WSL2 Ubuntu and configured authentication using `aws-eks-helm-autoscaling-admin`.
+- Created dedicated project IAM user `aws-eks-helm-autoscaling-admin` in `us-east-1` with administrative privileges for infrastructure provisioning, avoiding root account usage.
+- Generated programmatic access keys for `aws-eks-helm-autoscaling-admin` tagged for WSL2 CLI usage.
+- Installed AWS CLI v2 inside WSL2 Ubuntu and verified authentication via `aws sts get-caller-identity`.
 - Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with an 80% email alert threshold.
 
 ### Phase 2 Documentation
@@ -59,7 +58,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 **2. Access Key Configured:**
 
-![Access Key Configured](docs/screenshots/02-access-key-created.png)
+![Access Key Created](docs/screenshots/02-access-key-created.png)
 
 **3. AWS CLI Authentication Verified:**
 
