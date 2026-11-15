@@ -33,6 +33,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 - Captured project folder structure and GitHub repository landing page documentation.
 
 ### Phase 1 Documentation
+
 ![GitHub Repository Landing Page](docs/screenshots/01-github-repo.png)
 
 ---
@@ -47,18 +48,15 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 - Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with an 80% email alert threshold.
 
 ### Phase 2 Documentation
-<br>
+
 **Dedicated IAM User Created:**
 ![IAM User Created](docs/screenshots/02-iam-user-created.png)
 
-<br>
 **Access Key Configured:**
 ![Access Key Created](docs/screenshots/02-access-key-created.png)
 
-<br>
 **AWS CLI Authentication Verified:**
 ![AWS CLI Configured](docs/screenshots/02-aws-cli-configured.png)
 
-<br>
 **AWS Budget Active ($10/mo):**
 ![AWS Budget Created](docs/screenshots/02-aws-budget-created.png)
