@@ -2,6 +2,8 @@
 
 WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod Autoscaler (HPA).
 
+> **Simple version.** This project is the lean, cost-optimized build. For the production-grade version of the same app (Terraform, Multi-AZ RDS, EFS, CloudFront + WAF, Redis, CI/CD with OIDC), see [aws-eks-wordpress-enterprise](https://github.com/WJDVS/aws-eks-wordpress-enterprise).
+
 **Tools:** eksctl · kubectl · Helm · AWS (EKS, EC2, ELB, EBS, ACM) · GitHub
 
 ## Architecture
@@ -49,6 +51,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 - Generated programmatic access keys for `aws-eks-helm-autoscaling-admin` tagged for WSL2 CLI usage.
 - Installed AWS CLI v2 inside WSL2 Ubuntu and verified authentication via `aws sts get-caller-identity`.
 - Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with an 80% email alert threshold.
+  - The budget is a spending guardrail, not the project's running cost. The EKS control plane alone is about $0.10/hour (roughly $73 for a full month), so the alert is there to catch resources left running.
 
 ### Phase 2 Documentation
 
@@ -64,6 +67,6 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ![AWS CLI Configured](docs/screenshots/02-aws-cli-configured.png)
 
-**4. AWS Budget Active ($10/mo):**
+**4. AWS Budget Active ($10/mo spend guardrail):**
 
 ![AWS Budget Created](docs/screenshots/02-aws-budget-created.png)
