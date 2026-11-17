@@ -70,9 +70,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ---
 
-## Phase 3: Kubernetes Concepts and Tools
-- Installed pinned versions of core CLI tools inside WSL2 Ubuntu: `kubectl v1.30.0`, `eksctl v0.180.0`, and `helm v3.14.0`.
-- Installed `kind` (v0.22.0) and spun up a local Kubernetes cluster named `aws-eks-helm-autoscaling-local` for zero-cost practice.
+- Practiced core Kubernetes objects (`Namespace`, `Deployment`, `Service`) on the local `kind` cluster by deploying and validating a test application within the `wordpress` namespace.
 
 ### Phase 3 Documentation
 
@@ -83,3 +81,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 **Local `kind` Cluster Operational (`kubectl cluster-info`):**
 
 ![Kind Cluster Created](docs/screenshots/03-kind-cluster-created.png)
+
+**Core Kubernetes Objects Deployed & Verified (`kubectl get all -n wordpress`):**
+
+![Core Kubernetes Objects](docs/screenshots/03-core-k8s-objects.png)
