@@ -71,5 +71,13 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ![AWS Budget Created](docs/screenshots/02-aws-budget-created.png)
 
+---
+
 ## Phase 3: Kubernetes Concepts and Tools
 - Installed pinned versions of core CLI tools inside WSL2 Ubuntu: `kubectl v1.30.0`, `eksctl v0.180.0`, and `helm v3.14.0`.
+
+### Phase 3 Documentation
+
+**Core CLI Tools Installed & Verified (`kubectl`, `eksctl`, `helm`):**
+
+![CLI Tools Installed](docs/screenshots/03-tools-installed.png)
