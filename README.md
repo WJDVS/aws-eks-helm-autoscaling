@@ -70,3 +70,6 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 **4. AWS Budget Active ($10/mo spend guardrail):**
 
 ![AWS Budget Created](docs/screenshots/02-aws-budget-created.png)
+
+## Phase 3: Kubernetes Concepts and Tools
+- Installed pinned versions of core CLI tools inside WSL2 Ubuntu: `kubectl v1.30.0`, `eksctl v0.180.0`, and `helm v3.14.0`.
