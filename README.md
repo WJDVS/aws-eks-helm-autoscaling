@@ -2,8 +2,6 @@
 
 WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod Autoscaler (HPA).
 
-> **Simple version.** This project is the lean, cost-optimized build. For the production-grade version of the same app (Terraform, Multi-AZ RDS, EFS, CloudFront + WAF, Redis, CI/CD with OIDC), see [aws-eks-wordpress-enterprise](https://github.com/WJDVS/aws-eks-wordpress-enterprise).
-
 **Tools:** eksctl · kubectl · Helm · AWS (EKS, EC2, ELB, EBS, ACM) · GitHub
 
 ## Architecture
@@ -51,7 +49,6 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 - Generated programmatic access keys for `aws-eks-helm-autoscaling-admin` tagged for WSL2 CLI usage.
 - Installed AWS CLI v2 inside WSL2 Ubuntu and verified authentication via `aws sts get-caller-identity`.
 - Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with an 80% email alert threshold.
-  - The budget is a spending guardrail, not the project's running cost. The EKS control plane alone is about $0.10/hour (roughly $73 for a full month), so the alert is there to catch resources left running.
 
 ### Phase 2 Documentation
 
@@ -67,7 +64,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ![AWS CLI Configured](docs/screenshots/02-aws-cli-configured.png)
 
-**4. AWS Budget Active ($10/mo spend guardrail):**
+**4. AWS Budget Active ($10/mo):**
 
 ![AWS Budget Created](docs/screenshots/02-aws-budget-created.png)
 
@@ -75,9 +72,14 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ## Phase 3: Kubernetes Concepts and Tools
 - Installed pinned versions of core CLI tools inside WSL2 Ubuntu: `kubectl v1.30.0`, `eksctl v0.180.0`, and `helm v3.14.0`.
+- Installed `kind` (v0.22.0) and spun up a local Kubernetes cluster named `aws-eks-helm-autoscaling-local` for zero-cost practice.
 
 ### Phase 3 Documentation
 
 **Core CLI Tools Installed & Verified (`kubectl`, `eksctl`, `helm`):**
 
 ![CLI Tools Installed](docs/screenshots/03-tools-installed.png)
+
+**Local `kind` Cluster Operational (`kubectl cluster-info`):**
+
+![Kind Cluster Created](docs/screenshots/03-kind-cluster-created.png)
