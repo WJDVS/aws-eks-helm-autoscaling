@@ -114,3 +114,9 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 **1. Kubernetes Database Secret Created & Verified (`kubectl get secret wordpress-db -n wordpress`):**
 
 ![Database Secret Created](docs/screenshots/05-db-secret-created.png)
+
+- Authored a custom multi-tier WordPress and MySQL Helm chart (`helm/wordpress/`) utilizing parameterized templates (`values.yaml`), secure Secret injections, temporary `emptyDir` storage, and an AWS Classic Load Balancer service configuration.
+
+**2. Custom WordPress Helm Chart Linted & Validated (`helm lint helm/wordpress`):**
+
+![Helm Chart Linted](docs/screenshots/05-helm-chart-linted.png)

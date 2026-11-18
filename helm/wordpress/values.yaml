@@ -1,0 +1,10 @@
+replicaCount: 1
+
+wordpress:
+  image: wordpress:6.4-apache
+  serviceType: LoadBalancer
+  containerPort: 80
+
+mysql:
+  image: mysql:8.0
+  containerPort: 3306
