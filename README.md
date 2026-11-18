@@ -87,3 +87,14 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 **Core Kubernetes Objects Deployed & Verified (`kubectl get all -n wordpress`):**
 
 ![Core Kubernetes Objects](docs/screenshots/03-core-k8s-objects.png)
+
+---
+
+## Phase 4: Amazon EKS Cluster
+- Designed a declarative `eksctl` cluster blueprint (`eksctl/cluster-config.yaml`) targeting Kubernetes `v1.30` in `us-east-1` with NAT Gateways disabled (cost-optimized public subnet topology), governance tags, and a managed node group (`aws-eks-helm-autoscaling-nodes`) of two `t3.medium` worker nodes.
+
+### Phase 4 Documentation
+
+**1. Declarative `eksctl` Cluster Configuration (`eksctl/cluster-config.yaml`):**
+
+![EKS Cluster Configuration](docs/screenshots/04-eks-cluster-config.png)

@@ -1,0 +1,32 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: aws-eks-helm-autoscaling-cluster
+  region: us-east-1
+  version: "1.30"
+  tags:
+    Project: aws-eks-helm-autoscaling
+    Environment: dev
+    ManagedBy: eksctl
+
+vpc:
+  cidr: 10.0.0.0/16
+  nat:
+    gateway: Disable
+
+managedNodeGroups:
+  - name: aws-eks-helm-autoscaling-nodes
+    instanceType: t3.medium
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3
+    volumeSize: 20
+    volumeType: gp3
+    privateNetworking: false
+    ssh:
+      allow: false
+    tags:
+      Project: aws-eks-helm-autoscaling
+      Environment: dev
+      ManagedBy: eksctl
