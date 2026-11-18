@@ -104,3 +104,13 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 **2. Live Amazon EKS Cluster Provisioned & Nodes Ready (`kubectl get nodes -o wide`):**
 
 ![EKS Cluster Created](docs/screenshots/04-eks-cluster-created.png)
+
+---
+
+- Created the `wordpress` namespace and deployed a secure Kubernetes `Secret` (`wordpress-db`) inside our live Amazon EKS cluster to manage database credentials safely without plaintext exposure.
+
+### Phase 5 Documentation
+
+**1. Kubernetes Database Secret Created & Verified (`kubectl get secret wordpress-db -n wordpress`):**
+
+![Database Secret Created](docs/screenshots/05-db-secret-created.png)
