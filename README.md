@@ -98,3 +98,9 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 **1. Declarative `eksctl` Cluster Configuration (`eksctl/cluster-config.yaml`):**
 
 ![EKS Cluster Configuration](docs/screenshots/04-eks-cluster-config.png)
+
+- Provisioned the live Amazon EKS cluster (`aws-eks-helm-autoscaling-cluster`) via `eksctl` CloudFormation stacks in `us-east-1` and verified two `Ready` `t3.medium` worker nodes via `kubectl get nodes`.
+
+**2. Live Amazon EKS Cluster Provisioned & Nodes Ready (`kubectl get nodes -o wide`):**
+
+![EKS Cluster Created](docs/screenshots/04-eks-cluster-created.png)
