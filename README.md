@@ -107,7 +107,7 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ---
 
-- Created the `wordpress` namespace and deployed a secure Kubernetes `Secret` (`wordpress-db`) inside our live Amazon EKS cluster to manage database credentials safely without plaintext exposure.
+- Deployed the custom WordPress Helm release (`wordpress`) onto our live Amazon EKS cluster, scheduling MySQL and WordPress pods alongside an automatically provisioned AWS Classic Load Balancer.
 
 ### Phase 5 Documentation
 
@@ -115,8 +115,10 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ![Database Secret Created](docs/screenshots/05-db-secret-created.png)
 
-- Authored a custom multi-tier WordPress and MySQL Helm chart (`helm/wordpress/`) utilizing parameterized templates (`values.yaml`), secure Secret injections, temporary `emptyDir` storage, and an AWS Classic Load Balancer service configuration.
-
 **2. Custom WordPress Helm Chart Linted & Validated (`helm lint helm/wordpress`):**
 
 ![Helm Chart Linted](docs/screenshots/05-helm-chart-linted.png)
+
+**3. WordPress Helm Release Deployed & Classic Load Balancer Active (`kubectl get pods / svc -n wordpress`):**
+
+![WordPress Deployed](docs/screenshots/05-wordpress-deployed.png)
