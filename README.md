@@ -145,3 +145,11 @@ kubectl get deployment wordpress -n wordpress -o yaml | grep -A 12 -i "resources
 ```
 
 ![Resource Requests Configured](docs/screenshots/06-resource-requests-configured.png)
+
+### Phase 6, Step 3: Deploying and Verifying the Horizontal Pod Autoscaler
+We deployed a `HorizontalPodAutoscaler` targeting `Deployment/wordpress` in the `wordpress` namespace (`minReplicas: 1`, `maxReplicas: 4`, target average CPU utilization `50%`) and verified that it actively reads CPU metrics from `metrics-server` (`1% (1m) / 50%` with `ScalingActive: True`).
+
+```bash
+kubectl apply -f k8s/wordpress-hpa.yaml
+kubectl get hpa -n wordpress
+kubectl describe hpa wordpress -n wordpress
