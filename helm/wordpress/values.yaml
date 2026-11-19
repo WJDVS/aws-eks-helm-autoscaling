@@ -4,6 +4,13 @@ wordpress:
   image: wordpress:6.4-apache
   serviceType: LoadBalancer
   containerPort: 80
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
 
 mysql:
   image: mysql:8.0

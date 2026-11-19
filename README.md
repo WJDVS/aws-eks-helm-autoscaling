@@ -134,3 +134,14 @@ kubectl top nodes
 ```
 
 ![Metrics Server Installed](docs/screenshots/06-metrics-server-installed.png)
+
+### Phase 6, Step 2: Configuring CPU Requests and Limits in Helm
+We updated `helm/wordpress/values.yaml` and `helm/wordpress/templates/wordpress-deployment.yaml` to define CPU and memory requests (`100m` CPU, `128Mi` memory) and limits (`500m` CPU, `512Mi` memory) on the `wordpress` container, providing the CPU baseline required by the Horizontal Pod Autoscaler and upgrading the `wordpress` release in the `wordpress` namespace.
+
+```bash
+helm upgrade wordpress ./helm/wordpress --namespace wordpress
+kubectl rollout status deployment/wordpress -n wordpress
+kubectl describe deployment wordpress -n wordpress | grep -A 8 -i "Resources:"
+```
+
+![Resource Requests Configured](docs/screenshots/06-resource-requests-configured.png)

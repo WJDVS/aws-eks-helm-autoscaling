@@ -39,3 +39,10 @@ spec:
             secretKeyRef:
               name: wordpress-db
               key: database-password
+        resources:
+          requests:
+            cpu: {{ .Values.wordpress.resources.requests.cpu | quote }}
+            memory: {{ .Values.wordpress.resources.requests.memory | quote }}
+          limits:
+            cpu: {{ .Values.wordpress.resources.limits.cpu | quote }}
+            memory: {{ .Values.wordpress.resources.limits.memory | quote }}
