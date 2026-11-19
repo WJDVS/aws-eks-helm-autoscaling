@@ -122,3 +122,12 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 **3. WordPress Helm Release Deployed & Classic Load Balancer Active (`kubectl get pods / svc -n wordpress`):**
 
 ![WordPress Deployed](docs/screenshots/05-wordpress-deployed.png)
+
+---
+
+### Phase 6, Step 1: Installing and Verifying Metrics-Server
+We verified that `metrics-server` is running with two ready replicas (`2/2`) in the `kube-system` namespace on our live EKS cluster (`aws-eks-helm-autoscaling-cluster`) and serving node telemetry.
+
+```bash
+kubectl get deployment metrics-server -n kube-system
+kubectl top nodes
