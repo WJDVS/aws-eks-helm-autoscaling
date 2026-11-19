@@ -141,7 +141,7 @@ We updated `helm/wordpress/values.yaml` and `helm/wordpress/templates/wordpress-
 ```bash
 helm upgrade wordpress ./helm/wordpress --namespace wordpress
 kubectl rollout status deployment/wordpress -n wordpress
-kubectl describe deployment wordpress -n wordpress | grep -A 8 -i "Resources:"
+kubectl get deployment wordpress -n wordpress -o yaml | grep -A 12 -i "resources:"
 ```
 
 ![Resource Requests Configured](docs/screenshots/06-resource-requests-configured.png)
