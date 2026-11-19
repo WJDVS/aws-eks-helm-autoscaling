@@ -156,3 +156,14 @@ kubectl describe hpa wordpress -n wordpress
 ```
 
 ![HPA Deployed](docs/screenshots/06-hpa-deployed.png)
+
+### Phase 6, Step 4: Load Testing and Autoscaling Verification
+We generated HTTP load against the `wordpress` service in the `wordpress` namespace and observed the `HorizontalPodAutoscaler` scale `Deployment/wordpress` from `1` to `2` and `4` replicas (respecting `MAXPODS: 4`) as CPU utilization rose from `81%/50%` to `248%/50%` and distributed across pods (`189%/50%` down to `107%/50%`), followed by removing the load generator pod.
+
+```bash
+kubectl get hpa wordpress -n wordpress -w
+kubectl delete pod wp-loadgen -n wordpress --ignore-not-found
+kubectl get hpa,deploy,pods -n wordpress
+```
+
+![Autoscaling Verified](docs/screenshots/06-autoscaling-verified.png)
