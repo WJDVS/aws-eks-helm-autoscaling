@@ -153,3 +153,6 @@ We deployed a `HorizontalPodAutoscaler` targeting `Deployment/wordpress` in the 
 kubectl apply -f k8s/wordpress-hpa.yaml
 kubectl get hpa -n wordpress
 kubectl describe hpa wordpress -n wordpress
+```
+
+![HPA Deployed](docs/screenshots/06-hpa-deployed.png)
