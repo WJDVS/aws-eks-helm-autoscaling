@@ -131,3 +131,6 @@ We verified that `metrics-server` is running with two ready replicas (`2/2`) in 
 ```bash
 kubectl get deployment metrics-server -n kube-system
 kubectl top nodes
+```
+
+![Metrics Server Installed](docs/screenshots/06-metrics-server-installed.png)
