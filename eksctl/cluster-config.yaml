@@ -4,7 +4,7 @@ kind: ClusterConfig
 metadata:
   name: aws-eks-helm-autoscaling-cluster
   region: us-east-1
-  version: "1.30"
+  version: "1.31" # <--- Updated to match supported modern EKS control planes
   tags:
     Project: aws-eks-helm-autoscaling
     Environment: dev
