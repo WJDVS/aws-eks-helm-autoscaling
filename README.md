@@ -195,3 +195,15 @@ kubectl delete pod "$MYSQL_POD" -n wordpress
 ```
 
 ![Phase 7 HPA and emptyDir Verification](docs/screenshots/07-phase7-hpa-emptydir-verification.png)
+
+### Phase 7, Step 3: Cluster Teardown & Cost-Hygiene Verification
+We removed the `wordpress` workload and `LoadBalancer` service, deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` via `eksctl`, and verified zero lingering EKS clusters, worker nodes, load balancers, or `eksctl` CloudFormation stacks remain in alignment with `aws-eks-helm-autoscaling-budget` ($10/month).
+
+```bash
+aws eks list-clusters --region us-east-1 --output table
+aws ec2 describe-instances --region us-east-1 --filters "Name=instance-state-name,Values=pending,running,stopping,stopped" --query "Reservations[].Instances[].{InstanceId:InstanceId,Type:InstanceType,State:State.Name,Name:Tags[?Key=='Name']|[0].Value}" --output table
+aws elbv2 describe-load-balancers --region us-east-1 --query "LoadBalancers[].{Name:LoadBalancerName,State:State.Code,Type:Type}" --output table
+aws cloudformation list-stacks --region us-east-1 --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE UPDATE_ROLLBACK_COMPLETE --query "StackSummaries[?contains(StackName, 'eksctl') || contains(StackName, 'aws-eks-helm-autoscaling')].{StackName:StackName,Status:StackStatus}" --output table
+```
+
+![Phase 7 Teardown and Cost Hygiene](docs/screenshots/07-phase7-teardown-cost-hygiene.png)
