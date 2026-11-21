@@ -184,3 +184,14 @@ kubectl top nodes
 ```
 
 ![Phase 7 Baseline Ready](docs/screenshots/07-phase7-baseline-ready.png)
+
+### Phase 7, Step 2: HPA Scale-Out, Scale-Back-In & MySQL `emptyDir` Verification
+We drove concurrent HTTP load against the WordPress `LoadBalancer` endpoint, observed `HorizontalPodAutoscaler` scale `wordpress` replicas up above `1` and cool down as load ended, and verified that deleting the `wordpress-mysql` pod wipes data stored on `emptyDir`.
+
+```bash
+kubectl get hpa wordpress -n wordpress --watch
+kubectl get pods -n wordpress -o wide
+kubectl delete pod "$MYSQL_POD" -n wordpress
+```
+
+![Phase 7 HPA and emptyDir Verification](docs/screenshots/07-phase7-hpa-emptydir-verification.png)
