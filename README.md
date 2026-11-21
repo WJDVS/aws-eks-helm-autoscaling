@@ -167,3 +167,20 @@ kubectl get hpa,deploy,pods -n wordpress
 ```
 
 ![Autoscaling Verified](docs/screenshots/06-autoscaling-verified.png)
+
+---
+
+## Phase 7: Load Testing, Scale-Back-In & Ephemeral Storage Verification
+
+### Phase 7, Step 1: Redeploying WordPress, HPA & Telemetry Baseline
+We recreated the `wordpress` namespace, `wordpress-db` database `Secret`, `wordpress` Helm release (with CPU/memory requests and limits), and `HorizontalPodAutoscaler` on `aws-eks-helm-autoscaling-cluster` (`1.31`) in `us-east-1` and verified cluster telemetry before running Phase 7 load and storage tests.
+
+```bash
+helm upgrade --install wordpress ./helm/wordpress --namespace wordpress
+kubectl rollout status deployment/wordpress -n wordpress --timeout=180s
+kubectl apply -f k8s/wordpress-hpa.yaml
+kubectl get all,hpa -n wordpress
+kubectl top nodes
+```
+
+![Phase 7 Baseline Ready](docs/screenshots/07-phase7-baseline-ready.png)
