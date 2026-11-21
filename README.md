@@ -197,7 +197,7 @@ kubectl delete pod "$MYSQL_POD" -n wordpress
 ![Phase 7 HPA and emptyDir Verification](docs/screenshots/07-phase7-hpa-emptydir-verification.png)
 
 ### Phase 7, Step 3: Cluster Teardown & Cost-Hygiene Verification
-We removed the `wordpress` workload and `LoadBalancer` service, deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` via `eksctl`, and verified zero lingering EKS clusters, worker nodes, load balancers, or `eksctl` CloudFormation stacks remain in alignment with `aws-eks-helm-autoscaling-budget` ($10/month).
+We removed the `wordpress` workload and `LoadBalancer` service, deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` via `eksctl`, and audited remaining EC2 instances, CloudFormation stacks, and `aws-eks-helm-autoscaling-budget` ($10/month).
 
 ```bash
 aws eks list-clusters --region us-east-1 --output table
