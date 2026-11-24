@@ -222,3 +222,13 @@ kubectl get storageclass
 ```
 
 ![Phase 8 Step 1 EBS CSI and StorageClass](docs/screenshots/08-phase8-step1-ebs-csi.png)
+
+### Phase 8, Step 2: WordPress Auth-Key Kubernetes `Secret`
+We created the `wordpress-auth-keys` `Secret` in the `wordpress` namespace containing cryptographic WordPress authentication keys and salts so sessions remain consistent across autoscaled WordPress replicas.
+
+```bash
+kubectl get secret wordpress-auth-keys -n wordpress
+kubectl describe secret wordpress-auth-keys -n wordpress
+```
+
+![Phase 8 Step 2 WordPress Auth-Key Secret](docs/screenshots/08-phase8-step2-auth-keys-secret.png)
