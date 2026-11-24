@@ -207,3 +207,18 @@ aws cloudformation list-stacks --region us-east-1 --stack-status-filter CREATE_C
 ```
 
 ![Phase 7 Teardown and Cost Hygiene](docs/screenshots/07-phase7-teardown-cost-hygiene.png)
+
+---
+
+## Phase 8: Persistent Storage (`gp3` EBS) & WordPress Auth-Key Secret
+
+### Phase 8, Step 1: Cluster Provisioning & Amazon EBS CSI Driver (`gp3` StorageClass)
+We provisioned `aws-eks-helm-autoscaling-cluster` (`1.31`) in `us-east-1` via `eksctl`, associated the IAM OIDC provider, installed the `aws-ebs-csi-driver` addon with required IAM permissions, and configured a `gp3` `StorageClass`.
+
+```bash
+aws eks describe-cluster --name aws-eks-helm-autoscaling-cluster --region us-east-1 --query "cluster.{name:name,version:version,status:status}" --output table
+kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver
+kubectl get storageclass
+```
+
+![Phase 8 Step 1 EBS CSI and StorageClass](docs/screenshots/08-phase8-step1-ebs-csi.png)
