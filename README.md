@@ -242,3 +242,14 @@ helm template wordpress ./helm/wordpress --namespace wordpress | grep -E "kind:|
 ```
 
 ![Phase 8 Step 3 Helm Chart Updates](docs/screenshots/08-phase8-step3-helm-chart-updates.png)
+
+### Phase 8, Step 4: Helm Deployment, `gp3` PVC Binding & Auth-Key Injection Verification
+We deployed the updated `./helm/wordpress` release to `aws-eks-helm-autoscaling-cluster` in the `wordpress` namespace and verified that `wordpress-pvc` bound to a `gp3` volume, WordPress pods became ready, and all eight `wordpress-auth-keys` keys and salts were wired into the `wordpress` deployment.
+
+```bash
+kubectl get pvc -n wordpress
+kubectl get pods -n wordpress -o wide
+kubectl get deployment wordpress -n wordpress -o jsonpath='{range .spec.template.spec.containers[0].env[*]}{.name}{" -> "}{.valueFrom.secretKeyRef.name}{":"}{.valueFrom.secretKeyRef.key}{"\n"}{end}' | grep "wordpress-auth-keys"
+```
+
+![Phase 8 Step 4 Deploy PVC and Auth Keys](docs/screenshots/08-phase8-step4-deploy-pvc-auth-keys.png)
