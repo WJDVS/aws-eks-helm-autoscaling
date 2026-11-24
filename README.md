@@ -232,3 +232,13 @@ kubectl describe secret wordpress-auth-keys -n wordpress
 ```
 
 ![Phase 8 Step 2 WordPress Auth-Key Secret](docs/screenshots/08-phase8-step2-auth-keys-secret.png)
+
+### Phase 8, Step 3: Helm Chart Updates for `gp3` EBS Persistence & Auth-Key Injection
+We updated `./helm/wordpress` to configure a `gp3` `PersistentVolumeClaim` (`wordpress-pvc`) for persistent WordPress storage and inject the eight keys and salts from the `wordpress-auth-keys` `Secret` into WordPress pods, then validated the chart with `helm lint` and template rendering.
+
+```bash
+helm lint helm/wordpress
+helm template wordpress ./helm/wordpress --namespace wordpress | grep -E "kind:|name:|storageClassName:|wordpress-auth-keys"
+```
+
+![Phase 8 Step 3 Helm Chart Updates](docs/screenshots/08-phase8-step3-helm-chart-updates.png)

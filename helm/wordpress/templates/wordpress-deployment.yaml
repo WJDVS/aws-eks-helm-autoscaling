@@ -16,33 +16,84 @@ spec:
         app: wordpress
     spec:
       containers:
-      - name: wordpress
-        image: "{{ .Values.wordpress.image }}"
-        ports:
-        - containerPort: {{ .Values.wordpress.containerPort }}
-          name: http
-        env:
-        - name: WORDPRESS_DB_HOST
-          value: "wordpress-mysql:3306"
-        - name: WORDPRESS_DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: wordpress-db
-              key: database-name
-        - name: WORDPRESS_DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: wordpress-db
-              key: database-user
-        - name: WORDPRESS_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: wordpress-db
-              key: database-password
-        resources:
-          requests:
-            cpu: {{ .Values.wordpress.resources.requests.cpu | quote }}
-            memory: {{ .Values.wordpress.resources.requests.memory | quote }}
-          limits:
-            cpu: {{ .Values.wordpress.resources.limits.cpu | quote }}
-            memory: {{ .Values.wordpress.resources.limits.memory | quote }}
+        - name: wordpress
+          image: "{{ .Values.wordpress.image }}"
+          ports:
+            - containerPort: {{ .Values.wordpress.containerPort }}
+              name: http
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: "wordpress-mysql:3306"
+            - name: WORDPRESS_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-db
+                  key: database-name
+            - name: WORDPRESS_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-db
+                  key: database-user
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-db
+                  key: database-password
+            - name: WORDPRESS_AUTH_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_AUTH_KEY
+            - name: WORDPRESS_SECURE_AUTH_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_SECURE_AUTH_KEY
+            - name: WORDPRESS_LOGGED_IN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_LOGGED_IN_KEY
+            - name: WORDPRESS_NONCE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_NONCE_KEY
+            - name: WORDPRESS_AUTH_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_AUTH_SALT
+            - name: WORDPRESS_SECURE_AUTH_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_SECURE_AUTH_SALT
+            - name: WORDPRESS_LOGGED_IN_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_LOGGED_IN_SALT
+            - name: WORDPRESS_NONCE_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wordpress.authKeysSecretName }}
+                  key: WORDPRESS_NONCE_SALT
+          volumeMounts:
+            - name: wordpress-storage
+              mountPath: {{ .Values.wordpress.persistence.mountPath }}
+          resources:
+            requests:
+              cpu: {{ .Values.wordpress.resources.requests.cpu | quote }}
+              memory: {{ .Values.wordpress.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.wordpress.resources.limits.cpu | quote }}
+              memory: {{ .Values.wordpress.resources.limits.memory | quote }}
+      volumes:
+        - name: wordpress-storage
+          {{- if .Values.wordpress.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.wordpress.persistence.name }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
