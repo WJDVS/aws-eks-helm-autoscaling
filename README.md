@@ -253,3 +253,14 @@ kubectl get deployment wordpress -n wordpress -o jsonpath='{range .spec.template
 ```
 
 ![Phase 8 Step 4 Deploy PVC and Auth Keys](docs/screenshots/08-phase8-step4-deploy-pvc-auth-keys.png)
+
+### Phase 8, Step 5: `gp3` EBS Persistence Verification Across WordPress Pod Recreate
+We wrote a persistence marker file inside `/var/www/html/wp-content/uploads` on `wordpress-pvc`, deleted the active `wordpress` pod, waited for a replacement pod to become ready, and confirmed the marker file persisted on the `gp3` EBS volume.
+
+```bash
+kubectl get pvc -n wordpress
+kubectl get pods -n wordpress -o wide
+kubectl exec -n wordpress "$NEW_WP_POD" -- cat /var/www/html/wp-content/uploads/persistence-check.txt
+```
+
+![Phase 8 Step 5 gp3 Pod Recreate Persistence](docs/screenshots/08-phase8-step5-gp3-pod-recreate-persistence.png)
