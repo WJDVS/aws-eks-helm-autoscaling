@@ -264,3 +264,15 @@ kubectl exec -n wordpress "$NEW_WP_POD" -- cat /var/www/html/wp-content/uploads/
 ```
 
 ![Phase 8 Step 5 gp3 Pod Recreate Persistence](docs/screenshots/08-phase8-step5-gp3-pod-recreate-persistence.png)
+
+### Phase 8, Step 6: Cluster Teardown & Cost-Hygiene Verification
+We removed the `wordpress` release and namespace, deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1`, and verified zero active EKS clusters, EC2 instances, or load balancers to stay within `aws-eks-helm-autoscaling-budget` ($10/month).
+
+```bash
+aws eks list-clusters --region us-east-1 --output table
+aws ec2 describe-instances --region us-east-1 --filters "Name=instance-state-name,Values=pending,running,stopping,stopped" --query "Reservations[].Instances[].{InstanceId:InstanceId,Type:InstanceType,State:State.Name}" --output table
+aws elbv2 describe-load-balancers --region us-east-1 --query "LoadBalancers[].{Name:LoadBalancerName,Type:Type,State:State.Code}" --output table
+```
+
+![Phase 8 Step 6 Teardown and Cost Hygiene](docs/screenshots/08-phase8-step6-teardown-cost-hygiene.png)
+
