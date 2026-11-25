@@ -383,3 +383,9 @@ aws ec2 describe-instances --region us-east-1 --filters "Name=instance-state-nam
 | **Database & Storage** | Local VM / standalone DB | MySQL + EBS `gp3` PVC + K8s Secrets | Amazon RDS Multi-AZ + EFS (`ReadWriteMany`) + Secrets Manager |
 | **Networking & TLS** | EC2 security group + CloudFront/ALB | IRSA + ALB Controller + staged `Ingress` (`443`) | Private subnets + NAT/endpoints + ACM DNS validation + WAF |
 | **Cost & Lifecycle Hygiene** | `terraform destroy` between runs | `eksctl delete cluster --wait` + $10/mo budget | Continuous HA runtime + version upgrade planning |
+
+## Phase 10, Step 3: Full Repository, Link, Secret & Privacy Audit
+We verified all 33 image links in `README.md` resolve to non-empty PNG files under `docs/screenshots/` (`Missing/empty count: 0`), confirmed zero `AKIA` keys or real ACM ARNs in tracked files, verified `k8s/wordpress-alb-ingress.yaml` uses placeholder tokens (`REPLACE_WITH_12_DIGIT_ACCOUNT_ID` and `REPLACE_WITH_CERT_ID`), and confirmed no non-placeholder 12-digit numbers exist in tracked files.
+
+## Phase 10, Step 4: Final GitHub Publication 
+We finalized `README.md` across Phases 1–10, pushed all updates to `origin/main`, and verified cluster teardown and cost-hygiene checks in `us-east-1` (`all cluster resources were deleted`, zero active EKS clusters, load balancers, or running/pending EC2 instances).
