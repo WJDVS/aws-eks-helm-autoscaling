@@ -1,26 +1,5 @@
 # aws-eks-helm-autoscaling
 
-## Phase 10, Step 1: End-to-End Architecture & Lifecycle Synthesis
-`aws-eks-helm-autoscaling` is a cloud-native Kubernetes deployment, autoscaling, persistence, and encrypted-ingress portfolio project built in `us-east-1` using administrative IAM user `aws-eks-helm-autoscaling-admin`, `eksctl` (Amazon EKS `1.31` cluster `aws-eks-helm-autoscaling-cluster` with public subnets, no NAT Gateway, and `t3.medium` nodes), Helm (`./helm/wordpress`), Kubernetes autoscaling/storage/secret manifests, and AWS Load Balancer Controller / ACM ingress preparation (`k8s/wordpress-alb-ingress.yaml`)[cite: 2, 5].
-
-### End-to-End Lifecycle Across Phases 1–10 (Step 0)
-* **Cluster & Helm Packaging (Phases 1–3):** Provisioned `aws-eks-helm-autoscaling-cluster` (`1.31`) in `us-east-1` via `eksctl/cluster-config.yaml` and packaged WordPress + MySQL under `./helm/wordpress` (`Chart.yaml`, `values.yaml`, and deployment/service/PVC templates).
-* **Telemetry & Horizontal Autoscaling (Phases 4–5):** Enabled cluster metrics and `k8s/wordpress-hpa.yaml` (`HorizontalPodAutoscaler`) to validate workload scale-out under load and scale-back-in once load subsides.
-* **Persistent Storage & Secrets Management (Phases 6–8):** Configured EBS `gp3` storage (`k8s/gp3-storageclass.yaml` and `templates/wordpress-pvc.yaml`) alongside Kubernetes Secrets (`wordpress-db` via `k8s/wordpress-db-secret.yaml` and `wordpress-auth-keys`) to decouple credentials/keys from images and preserve state across pod restarts.
-* **HTTPS via ALB Readiness (Phase 9, Steps 1–4):** Configured OIDC and IAM Roles for Service Accounts (IRSA) for `aws-load-balancer-controller` in `kube-system`, installed the controller via Helm, evaluated ACM certificate validation status (`FAILED` on an unvalidated/unowned test domain), checked namespace `wordpress` and `Service` readiness (`Namespace wordpress not found yet`), staged `k8s/wordpress-alb-ingress.yaml` (`HTTPS: 443`, `internet-facing`, `ip` target type) with placeholder account/certificate tokens, and verified controller readiness (`2/2` ready, `Running` pods)[cite: 2, 3, 5].
-* **Teardown & Cost Hygiene (Phase 10, Step 0):** Deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` with `eksctl delete cluster --wait` (`all cluster resources were deleted`) and confirmed zero active EKS clusters, load balancers, or running/pending EC2 instances remained against `aws-eks-helm-autoscaling-budget` ($10/month)[cite: 5].
-
-### Repository Structure
-```text
-aws-eks-helm-autoscaling/
-├── docs/screenshots/          # Privacy-safe phase and step verification captures
-├── eksctl/cluster-config.yaml # EKS 1.31 cluster configuration
-├── helm/wordpress/            # Helm chart for WordPress and MySQL
-├── k8s/                       # StorageClass, HPA, Secret, test app, and ALB Ingress manifests
-├── scripts/                   # Lab helper and verification scripts
-└── README.md                  # Step-by-step engineering log and architecture guide
-# aws-eks-helm-autoscaling
-
 WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod Autoscaler (HPA).
 
 > **Simple version.** This project is the lean, cost-optimized build. For the production-grade version of the same app (Terraform, Multi-AZ RDS, EFS, CloudFront + WAF, Redis, CI/CD with OIDC), see [aws-eks-wordpress-enterprise](https://github.com/WJDVS/aws-eks-wordpress-enterprise).
@@ -33,29 +12,38 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 *Note: Solid borders represent the core build, while dashed borders represent planned Phase 2 upgrades.*
 
+## Repository Structure
+
+```text
+aws-eks-helm-autoscaling/
+├── docs/screenshots/          # Privacy-safe phase and step verification captures
+├── eksctl/cluster-config.yaml # EKS cluster configuration
+├── helm/wordpress/            # Helm chart for WordPress and MySQL
+├── k8s/                       # StorageClass, HPA, Secret, test app, and ALB Ingress manifests
+├── scripts/                   # Lab helper and verification scripts
+└── README.md                  # Step-by-step engineering log and architecture guide
+```
+
 ## Project Phases
-1. VS Code, Git & GitHub
+
+1. Environment Setup & Version Control
 2. AWS Foundations
-3. Kubernetes Concepts and Tools
+3. Kubernetes Concepts & Tools
 4. Amazon EKS Cluster
 5. WordPress with Helm
-6. Autoscaling
-7. Load Testing
-8. Auth-Key Secret & EBS
+6. Metrics & Horizontal Pod Autoscaling
+7. Load Testing, Scale-Back-In & Ephemeral Storage
+8. Persistent Storage (`gp3` EBS) & Auth-Key Secret
 9. HTTPS via ALB
 10. Documentation, Polish & Comparison
-
-> 🚧 In progress
 
 ---
 
 ## Phase 1: Environment Setup & Version Control
-- Configured WSL2 Ubuntu development environment on Windows 11.
+
+- Configured a WSL2 Ubuntu development environment on Windows 11.
 - Initialized Git version control with strict `.gitignore` security filters.
 - Established a standardized project directory structure (`eksctl/`, `helm/`, `k8s/`, `scripts/`, `docs/`).
-- Captured project folder structure and GitHub repository landing page documentation.
-
-### Phase 1 Documentation
 
 **Project Folder Structure (VS Code):**
 
@@ -68,12 +56,11 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 ---
 
 ## Phase 2: AWS Foundations
-- Created dedicated project IAM user `aws-eks-helm-autoscaling-admin` in `us-east-1` with administrative privileges for infrastructure provisioning, avoiding root account usage.
-- Generated programmatic access keys for `aws-eks-helm-autoscaling-admin` tagged for WSL2 CLI usage.
-- Installed AWS CLI v2 inside WSL2 Ubuntu and verified authentication via `aws sts get-caller-identity`.
-- Deployed an active AWS Budget (`aws-eks-helm-autoscaling-budget`) set to $10/month with an 80% email alert threshold.
 
-### Phase 2 Documentation
+- Created a dedicated IAM user, `aws-eks-helm-autoscaling-admin`, with administrative privileges for provisioning in `us-east-1`, so the root account is never used.
+- Generated programmatic access keys for that user, tagged for WSL2 CLI usage.
+- Installed AWS CLI v2 inside WSL2 Ubuntu and verified authentication with `aws sts get-caller-identity`.
+- Created an AWS Budget (`aws-eks-helm-autoscaling-budget`) of $10/month with an 80% email alert threshold.
 
 **1. Dedicated IAM User Created:**
 
@@ -93,9 +80,11 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ---
 
-- Practiced core Kubernetes objects (`Namespace`, `Deployment`, `Service`) on the local `kind` cluster by deploying and validating a test application within the `wordpress` namespace.
+## Phase 3: Kubernetes Concepts & Tools
 
-### Phase 3 Documentation
+- Installed and verified the core CLI tools: `kubectl`, `eksctl`, and `helm`.
+- Created a local `kind` cluster to practice Kubernetes without AWS costs.
+- Deployed and validated a test application in the `wordpress` namespace using the core Kubernetes objects (`Namespace`, `Deployment`, `Service`).
 
 **Core CLI Tools Installed & Verified (`kubectl`, `eksctl`, `helm`):**
 
@@ -112,15 +101,13 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 ---
 
 ## Phase 4: Amazon EKS Cluster
-- Designed a declarative `eksctl` cluster blueprint (`eksctl/cluster-config.yaml`) targeting Kubernetes `v1.30` in `us-east-1` with NAT Gateways disabled (cost-optimized public subnet topology), governance tags, and a managed node group (`aws-eks-helm-autoscaling-nodes`) of two `t3.medium` worker nodes.
 
-### Phase 4 Documentation
+- Designed a declarative `eksctl` blueprint (`eksctl/cluster-config.yaml`) targeting Kubernetes `v1.30` in `us-east-1`, with NAT Gateways disabled (a cost-optimized public-subnet topology), governance tags, and a managed node group (`aws-eks-helm-autoscaling-nodes`) of two `t3.medium` worker nodes.
+- Provisioned the live cluster, `aws-eks-helm-autoscaling-cluster`, through `eksctl`-generated CloudFormation stacks and verified both worker nodes reported `Ready`.
 
 **1. Declarative `eksctl` Cluster Configuration (`eksctl/cluster-config.yaml`):**
 
 ![EKS Cluster Configuration](docs/screenshots/04-eks-cluster-config.png)
-
-- Provisioned the live Amazon EKS cluster (`aws-eks-helm-autoscaling-cluster`) via `eksctl` CloudFormation stacks in `us-east-1` and verified two `Ready` `t3.medium` worker nodes via `kubectl get nodes`.
 
 **2. Live Amazon EKS Cluster Provisioned & Nodes Ready (`kubectl get nodes -o wide`):**
 
@@ -128,26 +115,30 @@ WordPress on Amazon EKS, deployed with Helm and autoscaled with a Horizontal Pod
 
 ---
 
-- Deployed the custom WordPress Helm release (`wordpress`) onto our live Amazon EKS cluster, scheduling MySQL and WordPress pods alongside an automatically provisioned AWS Classic Load Balancer.
+## Phase 5: WordPress with Helm
 
-### Phase 5 Documentation
+- Stored the MySQL credentials in a Kubernetes `Secret` (`wordpress-db`) instead of hard-coding them in the chart.
+- Linted and validated the custom WordPress Helm chart (`./helm/wordpress`).
+- Deployed the `wordpress` Helm release to the EKS cluster, which scheduled the MySQL and WordPress pods and automatically provisioned an AWS Classic Load Balancer.
 
-**1. Kubernetes Database Secret Created & Verified (`kubectl get secret wordpress-db -n wordpress`):**
+**1. Database Secret Created & Verified (`kubectl get secret wordpress-db -n wordpress`):**
 
 ![Database Secret Created](docs/screenshots/05-db-secret-created.png)
 
-**2. Custom WordPress Helm Chart Linted & Validated (`helm lint helm/wordpress`):**
+**2. Helm Chart Linted & Validated (`helm lint helm/wordpress`):**
 
 ![Helm Chart Linted](docs/screenshots/05-helm-chart-linted.png)
 
-**3. WordPress Helm Release Deployed & Classic Load Balancer Active (`kubectl get pods / svc -n wordpress`):**
+**3. WordPress Release Deployed & Classic Load Balancer Active (`kubectl get pods / svc -n wordpress`):**
 
 ![WordPress Deployed](docs/screenshots/05-wordpress-deployed.png)
 
 ---
 
+## Phase 6: Metrics & Horizontal Pod Autoscaling
+
 ### Phase 6, Step 1: Installing and Verifying Metrics-Server
-We verified that `metrics-server` is running with two ready replicas (`2/2`) in the `kube-system` namespace on our live EKS cluster (`aws-eks-helm-autoscaling-cluster`) and serving node telemetry.
+Verified that `metrics-server` is running with two ready replicas (`2/2`) in `kube-system` and serving node telemetry. The HPA depends on these metrics to make scaling decisions.
 
 ```bash
 kubectl get deployment metrics-server -n kube-system
@@ -157,7 +148,7 @@ kubectl top nodes
 ![Metrics Server Installed](docs/screenshots/06-metrics-server-installed.png)
 
 ### Phase 6, Step 2: Configuring CPU Requests and Limits in Helm
-We updated `helm/wordpress/values.yaml` and `helm/wordpress/templates/wordpress-deployment.yaml` to define CPU and memory requests (`100m` CPU, `128Mi` memory) and limits (`500m` CPU, `512Mi` memory) on the `wordpress` container, providing the CPU baseline required by the Horizontal Pod Autoscaler and upgrading the `wordpress` release in the `wordpress` namespace.
+Added CPU and memory requests (`100m` CPU, `128Mi` memory) and limits (`500m` CPU, `512Mi` memory) to the `wordpress` container in `helm/wordpress/values.yaml` and `templates/wordpress-deployment.yaml`, then upgraded the release. The CPU request is the baseline the HPA measures utilization against.
 
 ```bash
 helm upgrade wordpress ./helm/wordpress --namespace wordpress
@@ -168,7 +159,7 @@ kubectl get deployment wordpress -n wordpress -o yaml | grep -A 12 -i "resources
 ![Resource Requests Configured](docs/screenshots/06-resource-requests-configured.png)
 
 ### Phase 6, Step 3: Deploying and Verifying the Horizontal Pod Autoscaler
-We deployed a `HorizontalPodAutoscaler` targeting `Deployment/wordpress` in the `wordpress` namespace (`minReplicas: 1`, `maxReplicas: 4`, target average CPU utilization `50%`) and verified that it actively reads CPU metrics from `metrics-server` (`1% (1m) / 50%` with `ScalingActive: True`).
+Deployed a `HorizontalPodAutoscaler` targeting `Deployment/wordpress` (`minReplicas: 1`, `maxReplicas: 4`, target average CPU `50%`) and confirmed it was reading live metrics (`1% (1m) / 50%`, `ScalingActive: True`).
 
 ```bash
 kubectl apply -f k8s/wordpress-hpa.yaml
@@ -179,7 +170,7 @@ kubectl describe hpa wordpress -n wordpress
 ![HPA Deployed](docs/screenshots/06-hpa-deployed.png)
 
 ### Phase 6, Step 4: Load Testing and Autoscaling Verification
-We generated HTTP load against the `wordpress` service in the `wordpress` namespace and observed the `HorizontalPodAutoscaler` scale `Deployment/wordpress` from `1` to `2` and `4` replicas (respecting `MAXPODS: 4`) as CPU utilization rose from `81%/50%` to `248%/50%` and distributed across pods (`189%/50%` down to `107%/50%`), followed by removing the load generator pod.
+Generated HTTP load against the `wordpress` service and watched the HPA scale from `1` to `2` and then `4` replicas (the `MAXPODS: 4` ceiling) as CPU climbed from `81%/50%` to `248%/50%`. As the new pods shared the load, utilization fell from `189%/50%` to `107%/50%`. The load-generator pod was then removed.
 
 ```bash
 kubectl get hpa wordpress -n wordpress -w
@@ -191,10 +182,10 @@ kubectl get hpa,deploy,pods -n wordpress
 
 ---
 
-## Phase 7: Load Testing, Scale-Back-In & Ephemeral Storage Verification
+## Phase 7: Load Testing, Scale-Back-In & Ephemeral Storage
 
 ### Phase 7, Step 1: Redeploying WordPress, HPA & Telemetry Baseline
-We recreated the `wordpress` namespace, `wordpress-db` database `Secret`, `wordpress` Helm release (with CPU/memory requests and limits), and `HorizontalPodAutoscaler` on `aws-eks-helm-autoscaling-cluster` (`1.31`) in `us-east-1` and verified cluster telemetry before running Phase 7 load and storage tests.
+On a freshly provisioned `1.31` cluster, recreated the `wordpress` namespace, the `wordpress-db` `Secret`, the Helm release (with requests and limits), and the HPA, then confirmed cluster telemetry before testing.
 
 ```bash
 helm upgrade --install wordpress ./helm/wordpress --namespace wordpress
@@ -207,7 +198,7 @@ kubectl top nodes
 ![Phase 7 Baseline Ready](docs/screenshots/07-phase7-baseline-ready.png)
 
 ### Phase 7, Step 2: HPA Scale-Out, Scale-Back-In & MySQL `emptyDir` Verification
-We drove concurrent HTTP load against the WordPress `LoadBalancer` endpoint, observed `HorizontalPodAutoscaler` scale `wordpress` replicas up above `1` and cool down as load ended, and verified that deleting the `wordpress-mysql` pod wipes data stored on `emptyDir`.
+Drove concurrent HTTP load at the `LoadBalancer` endpoint and observed the HPA scale replicas above `1`, then cool back down once the load ended. Deleting the `wordpress-mysql` pod then wiped its `emptyDir` data, demonstrating why persistent storage is needed in Phase 8.
 
 ```bash
 kubectl get hpa wordpress -n wordpress --watch
@@ -218,7 +209,7 @@ kubectl delete pod "$MYSQL_POD" -n wordpress
 ![Phase 7 HPA and emptyDir Verification](docs/screenshots/07-phase7-hpa-emptydir-verification.png)
 
 ### Phase 7, Step 3: Cluster Teardown & Cost-Hygiene Verification
-We removed the `wordpress` workload and `LoadBalancer` service, deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` via `eksctl`, and audited remaining EC2 instances, CloudFormation stacks, and `aws-eks-helm-autoscaling-budget` ($10/month).
+Removed the workload and its `LoadBalancer` service, deleted the cluster with `eksctl`, and audited leftover EC2 instances, load balancers, and CloudFormation stacks against `aws-eks-helm-autoscaling-budget`.
 
 ```bash
 aws eks list-clusters --region us-east-1 --output table
@@ -234,7 +225,7 @@ aws cloudformation list-stacks --region us-east-1 --stack-status-filter CREATE_C
 ## Phase 8: Persistent Storage (`gp3` EBS) & WordPress Auth-Key Secret
 
 ### Phase 8, Step 1: Cluster Provisioning & Amazon EBS CSI Driver (`gp3` StorageClass)
-We provisioned `aws-eks-helm-autoscaling-cluster` (`1.31`) in `us-east-1` via `eksctl`, associated the IAM OIDC provider, installed the `aws-ebs-csi-driver` addon with required IAM permissions, and configured a `gp3` `StorageClass`.
+Provisioned a new `1.31` cluster, associated its IAM OIDC provider, installed the `aws-ebs-csi-driver` add-on with the required IAM permissions, and created a `gp3` `StorageClass`.
 
 ```bash
 aws eks describe-cluster --name aws-eks-helm-autoscaling-cluster --region us-east-1 --query "cluster.{name:name,version:version,status:status}" --output table
@@ -245,7 +236,7 @@ kubectl get storageclass
 ![Phase 8 Step 1 EBS CSI and StorageClass](docs/screenshots/08-phase8-step1-ebs-csi.png)
 
 ### Phase 8, Step 2: WordPress Auth-Key Kubernetes `Secret`
-We created the `wordpress-auth-keys` `Secret` in the `wordpress` namespace containing cryptographic WordPress authentication keys and salts so sessions remain consistent across autoscaled WordPress replicas.
+Created the `wordpress-auth-keys` `Secret` holding WordPress's authentication keys and salts, so login sessions stay valid no matter which autoscaled replica serves a request.
 
 ```bash
 kubectl get secret wordpress-auth-keys -n wordpress
@@ -254,8 +245,8 @@ kubectl describe secret wordpress-auth-keys -n wordpress
 
 ![Phase 8 Step 2 WordPress Auth-Key Secret](docs/screenshots/08-phase8-step2-auth-keys-secret.png)
 
-### Phase 8, Step 3: Helm Chart Updates for `gp3` EBS Persistence & Auth-Key Injection
-We updated `./helm/wordpress` to configure a `gp3` `PersistentVolumeClaim` (`wordpress-pvc`) for persistent WordPress storage and inject the eight keys and salts from the `wordpress-auth-keys` `Secret` into WordPress pods, then validated the chart with `helm lint` and template rendering.
+### Phase 8, Step 3: Helm Chart Updates for `gp3` Persistence & Auth-Key Injection
+Updated `./helm/wordpress` with a `gp3` `PersistentVolumeClaim` (`wordpress-pvc`) and injected the eight keys and salts from `wordpress-auth-keys` into the WordPress pods, then validated the chart with `helm lint` and template rendering.
 
 ```bash
 helm lint helm/wordpress
@@ -264,8 +255,8 @@ helm template wordpress ./helm/wordpress --namespace wordpress | grep -E "kind:|
 
 ![Phase 8 Step 3 Helm Chart Updates](docs/screenshots/08-phase8-step3-helm-chart-updates.png)
 
-### Phase 8, Step 4: Helm Deployment, `gp3` PVC Binding & Auth-Key Injection Verification
-We deployed the updated `./helm/wordpress` release to `aws-eks-helm-autoscaling-cluster` in the `wordpress` namespace and verified that `wordpress-pvc` bound to a `gp3` volume, WordPress pods became ready, and all eight `wordpress-auth-keys` keys and salts were wired into the `wordpress` deployment.
+### Phase 8, Step 4: Deployment, PVC Binding & Auth-Key Verification
+Deployed the updated release and confirmed that `wordpress-pvc` bound to a `gp3` volume, the WordPress pods became ready, and all eight auth keys and salts were wired into the deployment.
 
 ```bash
 kubectl get pvc -n wordpress
@@ -275,8 +266,8 @@ kubectl get deployment wordpress -n wordpress -o jsonpath='{range .spec.template
 
 ![Phase 8 Step 4 Deploy PVC and Auth Keys](docs/screenshots/08-phase8-step4-deploy-pvc-auth-keys.png)
 
-### Phase 8, Step 5: `gp3` EBS Persistence Verification Across WordPress Pod Recreate
-We wrote a persistence marker file inside `/var/www/html/wp-content/uploads` on `wordpress-pvc`, deleted the active `wordpress` pod, waited for a replacement pod to become ready, and confirmed the marker file persisted on the `gp3` EBS volume.
+### Phase 8, Step 5: Persistence Verification Across Pod Recreation
+Wrote a marker file to `/var/www/html/wp-content/uploads` on `wordpress-pvc`, deleted the running WordPress pod, and confirmed the file was still there in the replacement pod. Unlike the `emptyDir` test in Phase 7, the data survived.
 
 ```bash
 kubectl get pvc -n wordpress
@@ -287,7 +278,7 @@ kubectl exec -n wordpress "$NEW_WP_POD" -- cat /var/www/html/wp-content/uploads/
 ![Phase 8 Step 5 gp3 Pod Recreate Persistence](docs/screenshots/08-phase8-step5-gp3-pod-recreate-persistence.png)
 
 ### Phase 8, Step 6: Cluster Teardown & Cost-Hygiene Verification
-We removed the `wordpress` release and namespace, deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1`, and verified zero active EKS clusters, EC2 instances, or load balancers to stay within `aws-eks-helm-autoscaling-budget` ($10/month).
+Removed the release and namespace, deleted the cluster, and verified that no EKS clusters, EC2 instances, or load balancers remained.
 
 ```bash
 aws eks list-clusters --region us-east-1 --output table
@@ -299,8 +290,10 @@ aws elbv2 describe-load-balancers --region us-east-1 --query "LoadBalancers[].{N
 
 ---
 
+## Phase 9: HTTPS via ALB
+
 ### Phase 9, Step 1: AWS Load Balancer Controller via Helm with IRSA
-We provisioned `aws-eks-helm-autoscaling-cluster` in `us-east-1`, associated its IAM OIDC provider, configured the IRSA service account for `aws-load-balancer-controller` in `kube-system`, and installed the AWS Load Balancer Controller via Helm.
+Provisioned the cluster, associated its IAM OIDC provider, created an IAM Roles for Service Accounts (IRSA) service account for `aws-load-balancer-controller` in `kube-system`, and installed the controller with Helm.
 
 ```bash
 kubectl get deployment -n kube-system aws-load-balancer-controller
@@ -310,19 +303,19 @@ kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-cont
 ![Phase 9 Step 1 LB Controller and IRSA](docs/screenshots/09-phase9-step1-lb-controller-irsa.png)
 
 ### Phase 9, Step 2: SSL/TLS Certificate in AWS Certificate Manager (ACM)
-Because we do not yet have a registered website or custom DNS zone, we requested a test certificate in AWS Certificate Manager (`us-east-1`) for `wordpress.aws-eks-helm-autoscaling.example` and verified its ACM status (`FAILED` without DNS validation) to document how ACM integrates with HTTPS (`443`) on an ALB[cite: 6].
+With no registered domain or DNS zone yet, requested a test certificate for `wordpress.aws-eks-helm-autoscaling.example`. Its status shows `FAILED` because DNS validation is impossible on a domain we don't own, but the step documents how ACM plugs into HTTPS (`443`) on an ALB.
 
 ```bash
 aws acm list-certificates \
   --region us-east-1 \
   --query "CertificateSummaryList[].{DomainName:DomainName,Status:Status,KeyAlgorithm:KeyAlgorithm}" \
   --output table
-  ```
+```
 
-  ![Phase 9 Step 2 ACM Certificate](docs/screenshots/09-phase9-step2-acm-certificate.png)
+![Phase 9 Step 2 ACM Certificate](docs/screenshots/09-phase9-step2-acm-certificate.png)
 
-  ### Phase 9, Step 3: ALB Ingress Resource for HTTPS (Port 443)
-We inspected namespace `wordpress` and `Service` readiness on `aws-eks-helm-autoscaling-cluster` (`us-east-1`) and prepared `k8s/wordpress-alb-ingress.yaml` targeting the `wordpress` `Service` for HTTPS (`443`) ALB routing once an `ISSUED` ACM certificate is available[cite: 9].
+### Phase 9, Step 3: ALB Ingress Resource for HTTPS (Port 443)
+Checked whether the `wordpress` namespace and `Service` existed (`Namespace wordpress not found yet`) and staged `k8s/wordpress-alb-ingress.yaml`, which routes HTTPS (`443`) traffic to the `wordpress` `Service` once an `ISSUED` certificate is available.
 
 ```bash
 kubectl get namespace wordpress 2>/dev/null || echo "Namespace wordpress not found yet"
@@ -330,10 +323,12 @@ kubectl get svc -n wordpress 2>/dev/null || true
 ls -lh k8s/wordpress-alb-ingress.yaml
 ```
 
-![Phase 9 Step 3 ALB Ingress Preparation](docs/screenshots/09-phase9-step3-alb-ingress-prep.png).
+![Phase 9 Step 3 ALB Ingress Preparation](docs/screenshots/09-phase9-step3-alb-ingress-prep.png)
 
-### Phase 9, Step 4: End-to-End Encrypted Traffic Routing Verification & Readiness
-We verified the AWS Load Balancer Controller deployment (`2/2` ready) and pods (`Running`) in `kube-system`, confirmed the `alb` `IngressClass` is available, verified `k8s/wordpress-alb-ingress.yaml` remains staged with HTTPS (`443`) annotations and placeholder values rather than a live ACM ARN, and documented that live HTTPS ALB routing to the `wordpress` `Service` requires deploying namespace `wordpress` / `wordpress` `Service` plus an `ISSUED` ACM certificate in `us-east-1`[cite: 3].
+### Phase 9, Step 4: Encrypted Traffic Routing Readiness
+Verified the controller deployment (`2/2` ready, pods `Running`), confirmed the `alb` `IngressClass` is available, and checked that the staged Ingress carries the HTTPS (`443`), `internet-facing`, and `ip` target-type annotations with placeholder values instead of a live ACM ARN.
+
+Going live requires two things: deploying the `wordpress` namespace and `Service`, and an `ISSUED` ACM certificate in `us-east-1`.
 
 ```bash
 kubectl get deployment -n kube-system aws-load-balancer-controller
@@ -347,8 +342,10 @@ grep -nE "alb\.ingress\.kubernetes\.io/(listen-ports|certificate-arn|scheme|targ
 
 ---
 
-### Phase 10, Step 0: Cluster Teardown & Cloud Cost-Hygiene Verification
-We deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` and verified that no active EKS clusters, load balancers, or running/pending EC2 instances remained.
+## Phase 10: Documentation, Polish & Comparison
+
+### Phase 10, Step 0: Cluster Teardown & Cost-Hygiene Verification
+Deleted the cluster (`all cluster resources were deleted`) and verified that no EKS clusters, load balancers, or running/pending EC2 instances remained against the $10/month budget.
 
 ```bash
 eksctl delete cluster --name aws-eks-helm-autoscaling-cluster --region us-east-1 --wait
@@ -359,25 +356,12 @@ aws ec2 describe-instances --region us-east-1 --filters "Name=instance-state-nam
 
 ![Phase 10 Step 0 Teardown Verification](docs/screenshots/10-phase10-step0-teardown-verification.png)
 
-# aws-eks-helm-autoscaling
+### Phase 10, Step 1: End-to-End Architecture & Lifecycle Synthesis
+`aws-eks-helm-autoscaling` is a cloud-native portfolio project covering Kubernetes deployment, autoscaling, persistence, and encrypted ingress in `us-east-1`. It brings together `eksctl` (EKS cluster `aws-eks-helm-autoscaling-cluster` on public subnets, no NAT Gateway, `t3.medium` nodes), a custom Helm chart (`./helm/wordpress`), Kubernetes autoscaling, storage, and secret manifests, and AWS Load Balancer Controller / ACM ingress preparation (`k8s/wordpress-alb-ingress.yaml`).
 
-## Phase 10, Step 1: End-to-End Architecture & Lifecycle Synthesis
-`aws-eks-helm-autoscaling` is a cloud-native Kubernetes deployment, autoscaling, persistence, and encrypted-ingress portfolio project built in `us-east-1` using administrative IAM user `aws-eks-helm-autoscaling-admin`, `eksctl` (Amazon EKS `1.31` cluster `aws-eks-helm-autoscaling-cluster` with public subnets, no NAT Gateway, and `t3.medium` nodes), Helm (`./helm/wordpress`), Kubernetes autoscaling/storage/secret manifests, and AWS Load Balancer Controller / ACM ingress preparation (`k8s/wordpress-alb-ingress.yaml`).
-
-### End-to-End Lifecycle Across Phases 1–10 (Step 0)
-- **Cluster & Helm Packaging (Phases 1–3):** Provisioned `aws-eks-helm-autoscaling-cluster` (`1.31`) in `us-east-1` via `eksctl/cluster-config.yaml` and packaged WordPress + MySQL under `./helm/wordpress` (`Chart.yaml`, `values.yaml`, and deployment/service/PVC templates).
-- **Telemetry & Horizontal Autoscaling (Phases 4–5):** Enabled cluster metrics and `k8s/wordpress-hpa.yaml` (`HorizontalPodAutoscaler`) to validate workload scale-out under load and scale-back-in once load subsides.
-- **Persistent Storage & Secrets Management (Phases 6–8):** Configured EBS `gp3` storage (`k8s/gp3-storageclass.yaml` and `templates/wordpress-pvc.yaml`) alongside Kubernetes Secrets (`wordpress-db` via `k8s/wordpress-db-secret.yaml` and `wordpress-auth-keys`) to decouple credentials/keys from images and preserve state across pod restarts.
-- **HTTPS via ALB Readiness (Phase 9, Steps 1–4):** Configured OIDC and IAM Roles for Service Accounts (IRSA) for `aws-load-balancer-controller` in `kube-system`, installed the controller via Helm, evaluated ACM certificate validation status (`FAILED` on an unvalidated/unowned test domain), checked namespace `wordpress` and `Service` readiness (`Namespace wordpress not found yet`), staged `k8s/wordpress-alb-ingress.yaml` (`HTTPS: 443`, `internet-facing`, `ip` target type) with placeholder account/certificate tokens, and verified controller readiness (`2/2` ready, `Running` pods).
-- **Teardown & Cost Hygiene (Phase 10, Step 0):** Deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` with `eksctl delete cluster --wait` (`all cluster resources were deleted`) and confirmed zero active EKS clusters, load balancers, or running/pending EC2 instances remained against `aws-eks-helm-autoscaling-budget` ($10/month).
-
-### Repository Structure
-```text
-aws-eks-helm-autoscaling/
-├── docs/screenshots/          # Privacy-safe phase and step verification captures
-├── eksctl/cluster-config.yaml # EKS 1.31 cluster configuration
-├── helm/wordpress/            # Helm chart for WordPress and MySQL
-├── k8s/                       # StorageClass, HPA, Secret, test app, and ALB Ingress manifests
-├── scripts/                   # Lab helper and verification scripts
-└── README.md                  # Step-by-step engineering log and architecture guide
-```
+- **Foundations & Tooling (Phases 1–3):** Set up WSL2, Git, and GitHub; created the `aws-eks-helm-autoscaling-admin` IAM user and a $10/month budget; and practiced core Kubernetes objects on a local `kind` cluster.
+- **Cluster & Helm Packaging (Phases 4–5):** Provisioned the EKS cluster from `eksctl/cluster-config.yaml` and packaged WordPress + MySQL under `./helm/wordpress` (`Chart.yaml`, `values.yaml`, and deployment/service/PVC templates), with database credentials in the `wordpress-db` `Secret` (`k8s/wordpress-db-secret.yaml`).
+- **Telemetry & Horizontal Autoscaling (Phases 6–7):** Enabled `metrics-server`, set CPU requests and limits, and applied `k8s/wordpress-hpa.yaml` to prove scale-out under load and scale-back-in once load subsides. Also showed that `emptyDir` storage loses data when a pod is deleted.
+- **Persistent Storage & Secrets (Phase 8):** Added EBS `gp3` storage (`k8s/gp3-storageclass.yaml` and `templates/wordpress-pvc.yaml`) and the `wordpress-auth-keys` `Secret`, keeping credentials out of images and preserving data across pod restarts.
+- **HTTPS via ALB Readiness (Phase 9):** Configured OIDC and IRSA for the AWS Load Balancer Controller, evaluated ACM validation (`FAILED` on an unowned test domain), and staged the HTTPS Ingress with placeholder account and certificate values.
+- **Teardown & Cost Hygiene (Phases 7, 8, and 10):** Deleted the cluster at the end of each working session and verified that no billable EKS, EC2, or load balancer resources remained.
