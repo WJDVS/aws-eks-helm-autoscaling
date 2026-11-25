@@ -362,9 +362,6 @@ aws ec2 describe-instances --region us-east-1 --filters "Name=instance-state-nam
 # aws-eks-helm-autoscaling
 
 ## Phase 10, Step 1: End-to-End Architecture & Lifecycle Synthesis
-`aws-eks-helm-autoscaling` is a cloud-native Kubernetes deployment, autoscaling, persistence, and encrypted-ingress portfolio project built in `us-east-1` using administrative IAM user `aws-eks-helm-autoscaling-admin`, `eksctl` (Amazon EKS `1.31` cluster `aws-eks-helm-autoscaling-cluster` with public subnets, no NAT Gateway, and `t3.medium` nodes), Helm (`./helm/wordpress`), Kubernetes autoscaling/storage/secret manifests, and AWS Load Balancer Controller / ACM ingress preparation (`k8s/wordpress-alb-ingress.yaml`)[cite: 2, 5].
-
-## Phase 10, Step 1: End-to-End Architecture & Lifecycle Synthesis
 `aws-eks-helm-autoscaling` is a cloud-native Kubernetes deployment, autoscaling, persistence, and encrypted-ingress portfolio project built in `us-east-1` using administrative IAM user `aws-eks-helm-autoscaling-admin`, `eksctl` (Amazon EKS `1.31` cluster `aws-eks-helm-autoscaling-cluster` with public subnets, no NAT Gateway, and `t3.medium` nodes), Helm (`./helm/wordpress`), Kubernetes autoscaling/storage/secret manifests, and AWS Load Balancer Controller / ACM ingress preparation (`k8s/wordpress-alb-ingress.yaml`).
 
 ### End-to-End Lifecycle Across Phases 1–10 (Step 0)
