@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wordpress-alb-ingress
+  namespace: wordpress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    # Replace with an ISSUED ACM certificate ARN in us-east-1 before applying:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:REPLACE_WITH_12_DIGIT_ACCOUNT_ID:certificate/REPLACE_WITH_CERT_ID
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wordpress
+                port:
+                  number: 80

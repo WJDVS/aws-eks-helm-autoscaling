@@ -299,3 +299,14 @@ aws acm list-certificates \
   ```
 
   ![Phase 9 Step 2 ACM Certificate](docs/screenshots/09-phase9-step2-acm-certificate.png)
+
+  ### Phase 9, Step 3: ALB Ingress Resource for HTTPS (Port 443)
+We inspected namespace `wordpress` and `Service` readiness on `aws-eks-helm-autoscaling-cluster` (`us-east-1`) and prepared `k8s/wordpress-alb-ingress.yaml` targeting the `wordpress` `Service` for HTTPS (`443`) ALB routing once an `ISSUED` ACM certificate is available[cite: 9].
+
+```bash
+kubectl get namespace wordpress 2>/dev/null || echo "Namespace wordpress not found yet"
+kubectl get svc -n wordpress 2>/dev/null || true
+ls -lh k8s/wordpress-alb-ingress.yaml
+```
+
+![Phase 9 Step 3 ALB Ingress Preparation](docs/screenshots/09-phase9-step3-alb-ingress-prep.png).
