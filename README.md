@@ -310,3 +310,15 @@ ls -lh k8s/wordpress-alb-ingress.yaml
 ```
 
 ![Phase 9 Step 3 ALB Ingress Preparation](docs/screenshots/09-phase9-step3-alb-ingress-prep.png).
+
+### Phase 9, Step 4: End-to-End Encrypted Traffic Routing Verification & Readiness
+We verified the AWS Load Balancer Controller deployment (`2/2` ready) and pods (`Running`) in `kube-system`, confirmed the `alb` `IngressClass` is available, verified `k8s/wordpress-alb-ingress.yaml` remains staged with HTTPS (`443`) annotations and placeholder values rather than a live ACM ARN, and documented that live HTTPS ALB routing to the `wordpress` `Service` requires deploying namespace `wordpress` / `wordpress` `Service` plus an `ISSUED` ACM certificate in `us-east-1`[cite: 3].
+
+```bash
+kubectl get deployment -n kube-system aws-load-balancer-controller
+kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller -o wide
+kubectl get ingressclass 2>/dev/null || true
+kubectl get ingress -n wordpress 2>/dev/null || echo "No Ingress in namespace wordpress yet"
+grep -nE "alb\.ingress\.kubernetes\.io/(listen-ports|certificate-arn|scheme|target-type)|name: wordpress" k8s/wordpress-alb-ingress.yaml
+```
+![Phase 9 Step 4 HTTPS Verification](docs/screenshots/09-phase9-step4-https-verification.png)
