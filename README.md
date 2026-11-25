@@ -287,3 +287,15 @@ kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-cont
 ```
 
 ![Phase 9 Step 1 LB Controller and IRSA](docs/screenshots/09-phase9-step1-lb-controller-irsa.png)
+
+### Phase 9, Step 2: SSL/TLS Certificate in AWS Certificate Manager (ACM)
+Because we do not yet have a registered website or custom DNS zone, we requested a test certificate in AWS Certificate Manager (`us-east-1`) for `wordpress.aws-eks-helm-autoscaling.example` and verified its ACM status (`FAILED` without DNS validation) to document how ACM integrates with HTTPS (`443`) on an ALB[cite: 6].
+
+```bash
+aws acm list-certificates \
+  --region us-east-1 \
+  --query "CertificateSummaryList[].{DomainName:DomainName,Status:Status,KeyAlgorithm:KeyAlgorithm}" \
+  --output table
+  ```
+
+  ![Phase 9 Step 2 ACM Certificate](docs/screenshots/09-phase9-step2-acm-certificate.png)
