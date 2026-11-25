@@ -321,4 +321,19 @@ kubectl get ingressclass 2>/dev/null || true
 kubectl get ingress -n wordpress 2>/dev/null || echo "No Ingress in namespace wordpress yet"
 grep -nE "alb\.ingress\.kubernetes\.io/(listen-ports|certificate-arn|scheme|target-type)|name: wordpress" k8s/wordpress-alb-ingress.yaml
 ```
+
 ![Phase 9 Step 4 HTTPS Verification](docs/screenshots/09-phase9-step4-https-verification.png)
+
+---
+
+### Phase 10, Step 0: Cluster Teardown & Cloud Cost-Hygiene Verification
+We deleted `aws-eks-helm-autoscaling-cluster` in `us-east-1` and verified that no active EKS clusters, load balancers, or running/pending EC2 instances remained.
+
+```bash
+eksctl delete cluster --name aws-eks-helm-autoscaling-cluster --region us-east-1 --wait
+aws eks list-clusters --region us-east-1
+aws elbv2 describe-load-balancers --region us-east-1 --query 'LoadBalancers[].LoadBalancerName'
+aws ec2 describe-instances --region us-east-1 --filters "Name=instance-state-name,Values=running,pending" --query 'Reservations[].Instances[].InstanceId'
+```
+
+![Phase 10 Step 0 Teardown Verification](docs/screenshots/10-phase10-step0-teardown-verification.png)
