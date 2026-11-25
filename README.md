@@ -276,3 +276,14 @@ aws elbv2 describe-load-balancers --region us-east-1 --query "LoadBalancers[].{N
 
 ![Phase 8 Step 6 Teardown and Cost Hygiene](docs/screenshots/08-phase8-step6-teardown-cost-hygiene.png)
 
+---
+
+### Phase 9, Step 1: AWS Load Balancer Controller via Helm with IRSA
+We provisioned `aws-eks-helm-autoscaling-cluster` in `us-east-1`, associated its IAM OIDC provider, configured the IRSA service account for `aws-load-balancer-controller` in `kube-system`, and installed the AWS Load Balancer Controller via Helm.
+
+```bash
+kubectl get deployment -n kube-system aws-load-balancer-controller
+kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller -o wide
+```
+
+![Phase 9 Step 1 LB Controller and IRSA](docs/screenshots/09-phase9-step1-lb-controller-irsa.png)
