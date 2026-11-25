@@ -365,3 +365,21 @@ aws ec2 describe-instances --region us-east-1 --filters "Name=instance-state-nam
 - **Persistent Storage & Secrets (Phase 8):** Added EBS `gp3` storage (`k8s/gp3-storageclass.yaml` and `templates/wordpress-pvc.yaml`) and the `wordpress-auth-keys` `Secret`, keeping credentials out of images and preserving data across pod restarts.
 - **HTTPS via ALB Readiness (Phase 9):** Configured OIDC and IRSA for the AWS Load Balancer Controller, evaluated ACM validation (`FAILED` on an unowned test domain), and staged the HTTPS Ingress with placeholder account and certificate values.
 - **Teardown & Cost Hygiene (Phases 7, 8, and 10):** Deleted the cluster at the end of each working session and verified that no billable EKS, EC2, or load balancer resources remained.
+
+## Phase 10, Step 2: Architectural Trade-Offs, Cost Analysis & Platform Comparison
+
+### Key Architectural Trade-Offs (`aws-eks-helm-autoscaling` in `us-east-1`)
+- **Public Subnets Without NAT Gateway vs. Private Worker Subnets:** Using public subnets with no NAT Gateway avoided ~$32.85/month per NAT Gateway in hourly `us-east-1` charges (~$0.045/hr plus $0.045/GB data processing), helping stay within `aws-eks-helm-autoscaling-budget` ($10/month). Production clusters place worker nodes in private subnets with NAT Gateways or VPC endpoints while keeping only the `internet-facing` ALB in public subnets.
+- **EBS `gp3` PVC Persistence vs. Managed RDS & Shared Media Storage:** Attaching an EBS `gp3` PVC (`k8s/gp3-storageclass.yaml` and `templates/wordpress-pvc.yaml`) with Secrets (`wordpress-db` and `wordpress-auth-keys`) preserved state across pod restarts for a single MySQL instance. Production multi-replica WordPress with HPA (`k8s/wordpress-hpa.yaml`) benefits from managed Amazon RDS (Multi-AZ) for the database and shared `ReadWriteMany` storage (such as Amazon EFS) for `wp-content/uploads`.
+- **Staged ALB Ingress (`k8s/wordpress-alb-ingress.yaml`) & TLS Readiness:** Keeping `k8s/wordpress-alb-ingress.yaml` (`HTTPS: 443`, `internet-facing`, `ip` target type) staged with placeholder account/certificate values until an `ISSUED` ACM certificate in `us-east-1` is available prevented failed TLS reconciliations and avoided orphaned load-balancer spend.
+- **Session Teardown Hygiene:** Running `eksctl delete cluster --name aws-eks-helm-autoscaling-cluster --region us-east-1 --wait` between sessions eliminated ongoing EKS control-plane ($0.10/hr) and `t3.medium` node charges (`all cluster resources were deleted`).
+
+### Approach & Platform Comparison
+
+| Dimension | Terraform EC2 Lift-and-Shift | `aws-eks-helm-autoscaling` (EKS `1.31` Lab) | Production Managed Cloud-Native (EKS / ECS) |
+| :--- | :--- | :--- | :--- |
+| **Deployment & Packaging** | Terraform IaC on single EC2 VM | Helm (`./helm/wordpress`) + K8s manifests (`k8s/`) | Helm / GitOps + automated CI/CD rollouts |
+| **Autoscaling** | Manual / EC2 Auto Scaling group | HPA (`k8s/wordpress-hpa.yaml`) + cluster nodes | Multi-metric HPA + Karpenter / Cluster Autoscaler |
+| **Database & Storage** | Local VM / standalone DB | MySQL + EBS `gp3` PVC + K8s Secrets | Amazon RDS Multi-AZ + EFS (`ReadWriteMany`) + Secrets Manager |
+| **Networking & TLS** | EC2 security group + CloudFront/ALB | IRSA + ALB Controller + staged `Ingress` (`443`) | Private subnets + NAT/endpoints + ACM DNS validation + WAF |
+| **Cost & Lifecycle Hygiene** | `terraform destroy` between runs | `eksctl delete cluster --wait` + $10/mo budget | Continuous HA runtime + version upgrade planning |
